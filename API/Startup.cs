@@ -14,6 +14,7 @@ using Microsoft.OpenApi.Models;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Core.Interfaces;
+using API.Helpers;
 
 namespace API
 {
@@ -35,6 +36,10 @@ namespace API
 
             services.AddControllers();
 
+            services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));
+            
+            services.AddAutoMapper(typeof(MappingProfiles));
+            
             services.AddDbContext<StoreContext>(x => x.UseSqlite(_config.GetConnectionString("DefaultConnection")));
 
             services.AddSwaggerGen(c =>
@@ -57,6 +62,8 @@ namespace API
 
             app.UseRouting();
 
+            app.UseStaticFiles();
+            
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
