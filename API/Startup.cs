@@ -15,6 +15,8 @@ using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Core.Interfaces;
 using API.Helpers;
+using API.Middleware;
+using API.Extensions;
 
 namespace API
 {
@@ -32,31 +34,38 @@ namespace API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IProductRepository, ProductRepository>();
+            //services.AddScoped<IProductRepository, ProductRepository>();
 
             services.AddControllers();
 
-            services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));
+            //services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));
             
             services.AddAutoMapper(typeof(MappingProfiles));
             
             services.AddDbContext<StoreContext>(x => x.UseSqlite(_config.GetConnectionString("DefaultConnection")));
 
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebAPIv5", Version = "v1" });
-            });
+            services.AddApplicationServices();
+
+            services.AddSwaggerDocumentation();
+            // services.AddSwaggerGen(c =>
+            // {
+            //     c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebAPIv5", Version = "v1" });
+            // });
+
+            //Här har han mapcontrollers osv... Bör läggas till? 6 min in av nästan 9, swagger video...
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
+            app.UseMiddleware<ExceptionMiddleware>();
+            //if (env.IsDevelopment())
+            //{
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebAPIv5 v1"));
-            }
+            //}
+
+            app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
             app.UseHttpsRedirection();
 
@@ -65,6 +74,8 @@ namespace API
             app.UseStaticFiles();
             
             app.UseAuthorization();
+
+            app.UseSwaggerDocumentation();
 
             app.UseEndpoints(endpoints =>
             {
