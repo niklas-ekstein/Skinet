@@ -22,11 +22,6 @@ namespace Infrastructure.Data
             throw new NotImplementedException();
         }
 
-        public Task<int> CountAsync(ISpecification<T> spec)
-        {
-            throw new NotImplementedException();
-        }
-
         public void Delete(T entity)
         {
             throw new NotImplementedException();
@@ -59,6 +54,11 @@ namespace Infrastructure.Data
             throw new NotImplementedException();
         }
 
+        public async Task<int> CountAsync(ISpecification<T> spec)
+        {
+            return await ApplySpecification(spec).CountAsync();
+        }
+        
         private IQueryable<T> ApplySpecification(ISpecification<T> spec)
         {
             return SpecificationEvaluator<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);
